@@ -72,11 +72,11 @@ class VpnService : BaseVpnService(), BaseService.Interface {
     private inner class ProtectWorker : ConcurrentLocalSocketListener("ShadowsocksVpnThread",
             File(Core.deviceStorage.noBackupFilesDir, "protect_path")) {
         override fun acceptInternal(socket: LocalSocket) {
-            socket.inputStream.read()
+            if (socket.inputStream.read() == -1) return
             val success = socket.ancillaryFileDescriptors!!.single()!!.use { fd ->
                 underlyingNetwork.let { network ->
                     if (network != null) try {
-                        DnsResolverCompat.bindSocket(network, fd)
+                        network.bindSocket(fd)
                         return@let true
                     } catch (e: IOException) {
                         when ((e.cause as? ErrnoException)?.errno) {
@@ -85,9 +85,6 @@ class VpnService : BaseVpnService(), BaseService.Interface {
                             else -> Timber.w(e)
                         }
                         return@let false
-                    } catch (e: ReflectiveOperationException) {
-                        check(Build.VERSION.SDK_INT < 23)
-                        Timber.w(e)
                     }
                     protect(fd.int)
                 }
@@ -111,10 +108,11 @@ class VpnService : BaseVpnService(), BaseService.Interface {
     private var worker: ProtectWorker? = null
     private var active = false
     private var metered = false
+    @Volatile
     private var underlyingNetwork: Network? = null
         set(value) {
             field = value
-            if (active && Build.VERSION.SDK_INT >= 22) setUnderlyingNetworks(underlyingNetworks)
+            if (active) setUnderlyingNetworks(underlyingNetworks)
         }
     private val underlyingNetworks get() =
         // clearing underlyingNetworks makes Android 9 consider the network to be metered
@@ -148,7 +146,6 @@ class VpnService : BaseVpnService(), BaseService.Interface {
     }
 
     override suspend fun preInit() = DefaultNetworkListener.start(this) { underlyingNetwork = it }
-    override suspend fun resolver(host: String) = DnsResolverCompat.resolve(DefaultNetworkListener.get(), host)
     override suspend fun rawResolver(query: ByteArray) =
             // no need to listen for network here as this is only used for forwarding local DNS queries.
             // retries should be attempted by client.
@@ -207,10 +204,8 @@ class VpnService : BaseVpnService(), BaseService.Interface {
 
         metered = profile.metered
         active = true   // possible race condition here?
-        if (Build.VERSION.SDK_INT >= 22) {
-            builder.setUnderlyingNetworks(underlyingNetworks)
-            if (Build.VERSION.SDK_INT >= 29) builder.setMetered(metered)
-        }
+        builder.setUnderlyingNetworks(underlyingNetworks)
+        if (Build.VERSION.SDK_INT >= 29) builder.setMetered(metered)
 
         val conn = builder.establish() ?: throw NullConnectionException()
         this.conn = conn

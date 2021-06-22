@@ -58,6 +58,7 @@ class ScannerActivity : AppCompatActivity(), ImageAnalysis.Analyzer {
     private val imageAnalysis by lazy {
         ImageAnalysis.Builder().apply {
             setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            setBackgroundExecutor(Dispatchers.Default.asExecutor())
         }.build().also { it.setAnalyzer(Dispatchers.Main.immediate.asExecutor(), this) }
     }
 
@@ -69,6 +70,8 @@ class ScannerActivity : AppCompatActivity(), ImageAnalysis.Analyzer {
                 process { InputImage.fromMediaImage(mediaImage, image.imageInfo.rotationDegrees) }.also {
                     if (it) imageAnalysis.clearAnalyzer()
                 }
+            } catch (_: CancellationException) {
+                return@launchWhenCreated
             } catch (e: Exception) {
                 return@launchWhenCreated Timber.w(e)
             } finally {
@@ -80,7 +83,6 @@ class ScannerActivity : AppCompatActivity(), ImageAnalysis.Analyzer {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT < 23) return startImport()    // we show no love to lollipop
         if (Build.VERSION.SDK_INT >= 25) getSystemService<ShortcutManager>()!!.reportShortcutUsed("scan")
         setContentView(R.layout.layout_scanner)
         ListHolderListener.setup(this)
@@ -96,7 +98,7 @@ class ScannerActivity : AppCompatActivity(), ImageAnalysis.Analyzer {
                 CameraSelector.DEFAULT_BACK_CAMERA
             } else CameraSelector.DEFAULT_FRONT_CAMERA
             val preview = Preview.Builder().build()
-            preview.setSurfaceProvider(findViewById<PreviewView>(R.id.barcode).createSurfaceProvider())
+            preview.setSurfaceProvider(findViewById<PreviewView>(R.id.barcode).surfaceProvider)
             try {
                 cameraProvider.bindToLifecycle(this@ScannerActivity, selector, preview, imageAnalysis)
             } catch (e: IllegalArgumentException) {

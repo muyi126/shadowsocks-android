@@ -30,11 +30,10 @@ import androidx.activity.result.component2
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.github.shadowsocks.plugin.AlertDialogFragment
-import com.github.shadowsocks.plugin.Empty
 import com.github.shadowsocks.plugin.PluginContract
+import com.github.shadowsocks.plugin.fragment.AlertDialogFragment
+import com.github.shadowsocks.plugin.fragment.Empty
 import com.github.shadowsocks.preference.DataStore
-import com.github.shadowsocks.utils.SingleInstanceActivity
 import com.github.shadowsocks.widget.ListHolderListener
 
 class ProfileConfigActivity : AppCompatActivity() {
@@ -51,7 +50,6 @@ class ProfileConfigActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SingleInstanceActivity.register(this) ?: return
         setContentView(R.layout.layout_profile_config)
         ListHolderListener.setup(this)
         setSupportActionBar(findViewById(R.id.toolbar))
@@ -73,8 +71,9 @@ class ProfileConfigActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem) = child.onOptionsItemSelected(item)
 
     override fun onBackPressed() {
-        if (DataStore.dirty) UnsavedChangesDialogFragment().show(child, ProfileConfigFragment.REQUEST_UNSAVED_CHANGES)
-        else super.onBackPressed()
+        if (DataStore.dirty) UnsavedChangesDialogFragment().apply {
+            key()
+        }.show(supportFragmentManager, null) else super.onBackPressed()
     }
 
     val pluginHelp = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {

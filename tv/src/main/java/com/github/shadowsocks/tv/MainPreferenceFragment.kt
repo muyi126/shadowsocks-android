@@ -20,7 +20,6 @@
 
 package com.github.shadowsocks.tv
 
-import android.app.backup.BackupManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
@@ -28,9 +27,9 @@ import android.os.RemoteException
 import android.text.format.Formatter
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.leanback.preference.LeanbackPreferenceFragmentCompat
-import androidx.lifecycle.observe
 import androidx.preference.*
 import com.github.shadowsocks.BootReceiver
 import com.github.shadowsocks.Core
@@ -123,6 +122,7 @@ class MainPreferenceFragment : LeanbackPreferenceFragmentCompat(), ShadowsocksCo
         preferenceManager.preferenceDataStore = DataStore.publicStore
         DataStore.initGlobal()
         addPreferencesFromResource(R.xml.pref_main)
+        setFragmentResultListener(ProfilesDialogFragment::class.java.name) { _, _ -> startService() }
         fab = findPreference(Key.id)!!
         populateProfiles()
         stats = findPreference(Key.controlStats)!!
@@ -257,6 +257,5 @@ class MainPreferenceFragment : LeanbackPreferenceFragmentCompat(), ShadowsocksCo
         DataStore.publicStore.unregisterChangeListener(this)
         val context = requireContext()
         connection.disconnect(context)
-        BackupManager(context).dataChanged()
     }
 }

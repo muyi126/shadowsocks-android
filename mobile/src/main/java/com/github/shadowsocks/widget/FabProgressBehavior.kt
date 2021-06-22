@@ -1,7 +1,7 @@
 /*******************************************************************************
  *                                                                             *
- *  Copyright (C) 2020 by Max Lv <max.c.lv@gmail.com>                          *
- *  Copyright (C) 2020 by Mygod Studio <contact-shadowsocks-android@mygod.be>  *
+ *  Copyright (C) 2021 by Max Lv <max.c.lv@gmail.com>                          *
+ *  Copyright (C) 2021 by Mygod Studio <contact-shadowsocks-android@mygod.be>  *
  *                                                                             *
  *  This program is free software: you can redistribute it and/or modify       *
  *  it under the terms of the GNU General Public License as published by       *
@@ -18,24 +18,25 @@
  *                                                                             *
  *******************************************************************************/
 
-package com.github.shadowsocks
+package com.github.shadowsocks.widget
 
 import android.content.Context
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.RequestConfiguration
+import android.util.AttributeSet
+import android.view.View
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.progressindicator.CircularProgressIndicator
 
-internal object AdsManager {
-    init {
-        MobileAds.setRequestConfiguration(RequestConfiguration.Builder().apply {
-            setTestDeviceIds(listOf(
-                    "B08FC1764A7B250E91EA9D0D5EBEB208", "7509D18EB8AF82F915874FEF53877A64",
-                    "F58907F28184A828DD0DB6F8E38189C6", "FE983F496D7C5C1878AA163D9420CA97"))
-        }.build())
+class FabProgressBehavior(context: Context, attrs: AttributeSet?) :
+    CoordinatorLayout.Behavior<CircularProgressIndicator>(context, attrs) {
+    override fun layoutDependsOn(parent: CoordinatorLayout, child: CircularProgressIndicator, dependency: View) =
+        dependency.id == (child.layoutParams as CoordinatorLayout.LayoutParams).anchorId
+
+    override fun onLayoutChild(parent: CoordinatorLayout, child: CircularProgressIndicator,
+                               layoutDirection: Int): Boolean {
+        val size = parent.getDependencies(child).single().measuredHeight + child.trackThickness
+        return if (child.indicatorSize != size) {
+            child.indicatorSize = size
+            true
+        } else false
     }
-
-    fun load(context: Context?, setup: AdLoader.Builder.() -> Unit) =
-            AdLoader.Builder(context, "ca-app-pub-3283768469187309/8632513739").apply(setup).build()
-                    .loadAd(AdRequest.Builder().build())
 }

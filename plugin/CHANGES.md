@@ -1,3 +1,17 @@
+* 2.0.1:
+  * Moved `AlertDialogFragment` and related utilities to `fragment` package, with support for Fragment Result API from AndroidX Fragment 1.3.
+  * Dependency updates:
+    - `androidx.fragment:fragment-ktx:1.3.3`;
+    - `com.google.android.material:material:1.3.0`;
+    - `org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.32`.
+* 2.0.0:
+  * Deprecated passing `-V` and `--fast-open` to plugin.
+    Please find `__android_vpn` option passed via plugin options.
+  * Dependency updates:
+    - `androidx.core:core-ktx:1.3.2`;
+    - `androidx.drawerlayout:drawerlayout:1.1.1`;
+    - `com.google.android.material:material:1.2.1`;
+    - `org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10`.
 * 1.3.4:
   * Optional new metadata `com.github.shadowsocks.plugin.id.aliases` for plugin ID aliases;
     (see doc for `PluginContract.METADATA_KEY_ID_ALIASES` and main documentation "Plugin ID Aliasing" for more information)

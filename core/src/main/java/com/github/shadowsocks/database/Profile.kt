@@ -36,7 +36,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import timber.log.Timber
@@ -54,7 +54,7 @@ data class Profile(
         // user configurable fields
         var name: String? = "",
 
-        var host: String = sponsored,
+        var host: String = "example.shadowsocks.org",
         var remotePort: Int = 8388,
         var password: String = "u1rRWTssNv0p",
         var method: String = "aes-256-cfb",
@@ -101,7 +101,6 @@ data class Profile(
 
     companion object {
         private const val serialVersionUID = 1L
-        private const val sponsored = "198.199.101.152"
         private val pattern =
                 """(?i)ss://[-a-zA-Z0-9+&@#/%?=.~*'()|!:,;_\[\]]*[-a-zA-Z0-9+&@#/%=.~*'()|\[\]]""".toRegex()
         private val userInfoPattern = "^(.+?):(.*)$".toRegex()
@@ -115,7 +114,7 @@ data class Profile(
                     if (match != null) {
                         val profile = Profile()
                         feature?.copyFeatureSettingsTo(profile)
-                        profile.method = match.groupValues[1].toLowerCase(Locale.ENGLISH)
+                        profile.method = match.groupValues[1].lowercase(Locale.ENGLISH)
                         profile.password = match.groupValues[2]
                         profile.host = match.groupValues[3]
                         profile.remotePort = match.groupValues[4].toInt()
@@ -338,8 +337,6 @@ data class Profile(
         val fallback = profiles.get(udpFallback ?: return@apply)
         if (fallback != null && fallback.plugin.isNullOrEmpty()) fallback.toJson().also { put("udp_fallback", it) }
     }
-
-    val isSponsored get() = host == sponsored
 
     fun serialize() {
         DataStore.editingId = id

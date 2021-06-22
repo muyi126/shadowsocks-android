@@ -1,7 +1,7 @@
 /*******************************************************************************
  *                                                                             *
- *  Copyright (C) 2017 by Max Lv <max.c.lv@gmail.com>                          *
- *  Copyright (C) 2017 by Mygod Studio <contact-shadowsocks-android@mygod.be>  *
+ *  Copyright (C) 2020 by Max Lv <max.c.lv@gmail.com>                          *
+ *  Copyright (C) 2020 by Mygod Studio <contact-shadowsocks-android@mygod.be>  *
  *                                                                             *
  *  This program is free software: you can redistribute it and/or modify       *
  *  it under the terms of the GNU General Public License as published by       *
@@ -18,14 +18,16 @@
  *                                                                             *
  *******************************************************************************/
 
-package com.github.shadowsocks
+@file:JvmName("Utils")
 
-import android.app.backup.BackupAgentHelper
-import android.app.backup.FileBackupHelper
-import com.github.shadowsocks.utils.Key
+package com.github.shadowsocks.plugin.fragment
 
-@Deprecated("Only used in API level < 23. For 6.0+, Auto Backup for Apps is used.")
-class ConfigBackupHelper : BackupAgentHelper() {
-    override fun onCreate() = addHelper("com.github.shadowsocks.database.profile", FileBackupHelper(this,
-            "../databases/" + Key.DB_PROFILE, "../databases/" + Key.DB_PUBLIC))
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+
+typealias Empty = com.github.shadowsocks.plugin.Empty
+
+@JvmOverloads
+fun DialogFragment.showAllowingStateLoss(fragmentManager: FragmentManager, tag: String? = null) {
+    if (!fragmentManager.isStateSaved) show(fragmentManager, tag)
 }
